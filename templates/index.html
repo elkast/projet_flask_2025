@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Gestion de Rendez-vous Médicaux{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Gestion de Rendez-vous Médicaux</h1>
+    <p>Prenez rendez-vous facilement avec nos médecins spécialisés</p>
+    {% if not session.patient_id %}
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('patient_inscription') }}" class="btn btn-primary" style="margin-right: 1rem;">S'inscrire</a>
+            <a href="{{ url_for('patient_connexion') }}" class="btn btn-outline">Se connecter</a>
+        </div>
+    {% else %}
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('nouveau_rdv') }}" class="btn btn-primary" style="margin-right: 1rem;">Prendre un RDV</a>
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline">Mon tableau de bord</a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="features">
+    <div class="card feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Prise de rendez-vous simple</h3>
+        <p>Réservez vos consultations en quelques clics avec nos médecins disponibles.</p>
+    </div>
+    
+    <div class="card feature-card">
+        <div class="feature-icon">👨‍⚕️</div>
+        <h3>Médecins spécialisés</h3>
+        <p>Accédez à une équipe de médecins qualifiés dans différentes spécialités.</p>
+    </div>
+    
+    <div class="card feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Gestion en ligne</h3>
+        <p>Consultez et gérez tous vos rendez-vous depuis votre espace personnel.</p>
+    </div>
+</div>
+
+{% if not session.patient_id %}
+<div class="card" style="margin-top: 3rem; text-align: center;">
+    <div class="card-header">
+        <h2 class="card-title">Commencez dès maintenant</h2>
+        <p class="card-subtitle">Créez votre compte pour accéder à tous nos services</p>
+    </div>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('patient_inscription') }}" class="btn btn-primary">Créer un compte</a>
+        <a href="{{ url_for('patient_connexion') }}" class="btn btn-secondary">J'ai déjà un compte</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription Patient - Gestion de Rendez-vous Médicaux{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+        <h1 class="card-title">Inscription Patient</h1>
+        <p class="card-subtitle">Créez votre compte pour prendre rendez-vous</p>
+    </div>
+
+    <form method="POST">
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="nom" class="form-label">Nom *</label>
+                <input type="text" id="nom" name="nom" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="prenom" class="form-label">Prénom *</label>
+                <input type="text" id="prenom" name="prenom" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">Email *</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="mot_de_passe" class="form-label">Mot de passe *</label>
+            <input type="password" id="mot_de_passe" name="mot_de_passe" class="form-control" required minlength="6">
+            <small style="color: var(--text-light); font-size: 0.875rem;">Minimum 6 caractères</small>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="date_naissance" class="form-label">Date de naissance *</label>
+                <input type="date" id="date_naissance" name="date_naissance" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="telephone" class="form-label">Téléphone *</label>
+                <input type="tel" id="telephone" name="telephone" class="form-control" required>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%;">S'inscrire</button>
+        </div>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+        <p>Vous avez déjà un compte ? 
+            <a href="{{ url_for('patient_connexion') }}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Se connecter</a>
+        </p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation en temps réel du mot de passe
+    const passwordInput = document.getElementById('mot_de_passe');
+    passwordInput.addEventListener('input', function() {
+        if (this.value.length < 6) {
+            this.style.borderColor = 'var(--danger-color)';
+        } else {
+            this.style.borderColor = 'var(--success-color)';
+        }
+    });
+
+    // Validation de l'email
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(this.value)) {
+            this.style.borderColor = 'var(--danger-color)';
+        } else {
+            this.style.borderColor = 'var(--success-color)';
+        }
+    });
+});
+</script>
+{% endblock %}
+

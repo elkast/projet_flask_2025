@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Détails du Rendez-vous - {{ rdv['date_heure'].strftime('%d/%m/%Y') }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <h1 class="card-title">Détails du Rendez-vous</h1>
+                <p class="card-subtitle">Informations complètes de votre consultation</p>
+            </div>
+            <span class="badge 
+                {% if rdv['statut'] == 'planifie' %}badge-success
+                {% elif rdv['statut'] == 'annule' %}badge-danger
+                {% elif rdv['statut'] == 'confirme' %}badge-info
+                {% elif rdv['statut'] == 'termine' %}badge-secondary
+                {% else %}badge-warning{% endif %}" 
+                style="font-size: 1rem; padding: 0.5rem 1rem;">
+                {{ rdv['statut']|capitalize }}
+            </span>
+        </div>
+    </div>
+
+    <div style="display: grid; gap: 2rem;">
+        <!-- Informations du rendez-vous -->
+        <div class="card" style="background: var(--light-bg); border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-dark); display: flex; align-items: center;">
+                📅 Informations du rendez-vous
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <strong style="color: var(--text-dark);">Date et heure</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['date_heure'].strftime('%A %d %B %Y à %H:%M') }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Numéro de rendez-vous</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        #RDV{{ "%06d"|format(rdv['id']) }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Date de création</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['created_at'].strftime('%d/%m/%Y à %H:%M') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations du médecin -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-dark); display: flex; align-items: center;">
+                👨‍⚕️ Informations du médecin
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <strong style="color: var(--text-dark);">Nom complet</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        Dr {{ rdv['medecin_prenom'] }} {{ rdv['medecin_nom'] }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Spécialité</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['specialite'] }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Email</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['medecin_email'] }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Téléphone</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['medecin_telephone'] }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations du patient -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-dark); display: flex; align-items: center;">
+                👤 Informations du patient
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <strong style="color: var(--text-dark);">Nom complet</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['patient_prenom'] }} {{ rdv['patient_nom'] }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Email</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['patient_email'] }}
+                    </span>
+                </div>
+                
+                <div>
+                    <strong style="color: var(--text-dark);">Téléphone</strong><br>
+                    <span style="color: var(--text-light); font-size: 1.1rem;">
+                        {{ rdv['patient_telephone'] }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motif et notes -->
+        {% if rdv['motif'] %}
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-dark); display: flex; align-items: center;">
+                💬 Motif de consultation
+            </h3>
+            <p style="color: var(--text-light); font-size: 1.1rem; line-height: 1.6;">
+                {{ rdv['motif'] }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+            <a href="{{ url_for('liste_rdv') }}" class="btn btn-secondary">
+                ← Retour à la liste
+            </a>
+            
+            {% if rdv['statut'] == 'planifie' %}
+                <form method="POST" action="{{ url_for('annuler_rdv', rdv_id=rdv['id']) }}" 
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
+                    <button type="submit" class="btn btn-danger">
+                        ❌ Annuler le rendez-vous
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation d'apparition
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 50);
+        }, index * 100);
+    });
+
+    // Confirmation d'annulation
+    const cancelForm = document.querySelector('form[action*="annuler"]');
+    if (cancelForm) {
+        cancelForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = 'Annulation...';
+            submitBtn.disabled = true;
+        });
+    });
+});
+</script>
+{% endblock %}

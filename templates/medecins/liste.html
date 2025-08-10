@@ -1,0 +1,665 @@
+{% extends "base.html" %}
+
+{% block title %}Nos Médecins - Cabinet Médical{% endblock %}
+
+{% block content %}
+<div class="medecins-container">
+    <!-- En-tête avec titre et description -->
+    <div class="medecins-header">
+        <h1>Rencontrez nos spécialistes <span class="header-icon">👨‍⚕️👩‍⚕️</span></h1>
+        <p class="subtitle">Une équipe médicale qualifiée à votre service</p>
+    </div>
+
+    <!-- Statistiques en temps réel -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-medecins">--</h3>
+                <p>Médecins</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="medecins-disponibles">--</h3>
+                <p>Disponibles maintenant</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-rdv">--</h3>
+                <p>RDV ce mois</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3 id="rdv-programmes">--</h3>
+                <p>RDV programmés</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Rechercher un médecin...">
+            <button id="search-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="filters">
+            <select id="specialite-filter">
+                <option value="">Toutes spécialités</option>
+                <!-- Options seront ajoutées dynamiquement -->
+            </select>
+            <select id="disponibilite-filter">
+                <option value="">Disponibilité</option>
+                <option value="disponible">Disponible maintenant</option>
+                <option value="semaine">Disponible cette semaine</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- État de chargement -->
+    <div id="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Chargement de nos médecins...</p>
+    </div>
+
+    <!-- Liste des médecins -->
+    <div class="medecins-grid" id="liste-medecins">
+        <!-- Les médecins seront chargés dynamiquement ici -->
+    </div>
+
+    <!-- Message d'erreur -->
+    <div id="error-message" class="error-state">
+        <div class="error-icon">⚠️</div>
+        <h4>Erreur de chargement</h4>
+        <p>Nous n'avons pas pu charger la liste des médecins.</p>
+        <button id="retry-btn">Réessayer</button>
+    </div>
+
+    <!-- État vide -->
+    <div id="empty-state" class="empty-state">
+        <div class="empty-icon">👨‍⚕️</div>
+        <h4>Aucun médecin trouvé</h4>
+        <p>Essayez de modifier vos critères de recherche.</p>
+    </div>
+</div>
+
+<script>
+// Configuration
+const config = {
+    refreshInterval: {
+        stats: 30000, // 30 secondes
+        medecins: 10000 // 10 secondes
+    }
+};
+
+// Éléments DOM
+const elements = {
+    loading: document.getElementById('loading'),
+    medecinsGrid: document.getElementById('liste-medecins'),
+    errorMessage: document.getElementById('error-message'),
+    emptyState: document.getElementById('empty-state'),
+    searchInput: document.getElementById('search-input'),
+    specialiteFilter: document.getElementById('specialite-filter'),
+    disponibiliteFilter: document.getElementById('disponibilite-filter'),
+    retryBtn: document.getElementById('retry-btn'),
+    searchBtn: document.getElementById('search-btn')
+};
+
+// Fonction pour afficher l'état de chargement
+function showLoading() {
+    elements.loading.style.display = 'flex';
+    elements.medecinsGrid.style.display = 'none';
+    elements.errorMessage.style.display = 'none';
+    elements.emptyState.style.display = 'none';
+}
+
+// Fonction pour afficher l'erreur
+function showError(message = 'Erreur lors du chargement des médecins.') {
+    elements.loading.style.display = 'none';
+    elements.medecinsGrid.style.display = 'none';
+    elements.errorMessage.style.display = 'flex';
+    elements.emptyState.style.display = 'none';
+    elements.errorMessage.querySelector('p').textContent = message;
+}
+
+// Fonction pour afficher l'état vide
+function showEmptyState() {
+    elements.loading.style.display = 'none';
+    elements.medecinsGrid.style.display = 'none';
+    elements.errorMessage.style.display = 'none';
+    elements.emptyState.style.display = 'flex';
+}
+
+// Fonction pour afficher les médecins
+function showMedecins() {
+    elements.loading.style.display = 'none';
+    elements.medecinsGrid.style.display = 'grid';
+    elements.errorMessage.style.display = 'none';
+    elements.emptyState.style.display = 'none';
+}
+
+// Fonction pour charger les statistiques
+async function loadStatistics() {
+    try {
+        const response = await fetch('/medecins/api/statistiques');
+        if (!response.ok) throw new Error('Erreur réseau');
+        
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('total-medecins').textContent = data.statistiques.total_medecins;
+            document.getElementById('medecins-disponibles').textContent = data.statistiques.medecins_disponibles;
+            document.getElementById('total-rdv').textContent = data.statistiques.total_rdv;
+            document.getElementById('rdv-programmes').textContent = data.statistiques.rdv_programmes;
+        } else {
+            throw new Error(data.error || 'Erreur inconnue');
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+    }
+}
+
+// Fonction pour charger la liste des médecins
+async function loadMedecins() {
+    showLoading();
+    
+    try {
+        const response = await fetch('/medecins/api/liste', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Erreur réseau');
+        
+        const data = await response.json();
+        if (data.success) {
+            renderMedecins(data.medecins);
+            updateSpecialiteFilter(data.medecins);
+            showMedecins();
+        } else {
+            throw new Error(data.error || 'Erreur inconnue');
+        }
+    } catch (error) {
+        showError(error.message);
+    }
+}
+
+// Fonction pour afficher les médecins
+function renderMedecins(medecins) {
+    elements.medecinsGrid.innerHTML = '';
+    
+    if (medecins.length === 0) {
+        showEmptyState();
+        return;
+    }
+    
+    medecins.forEach(medecin => {
+        const medecinCard = document.createElement('div');
+        medecinCard.className = 'medecin-card';
+        medecinCard.innerHTML = `
+            <div class="medecin-avatar">
+                ${medecin.prenom.charAt(0)}${medecin.nom.charAt(0)}
+            </div>
+            <div class="medecin-info">
+                <h3>Dr. ${medecin.prenom} ${medecin.nom}</h3>
+                <p class="specialite">${medecin.specialite}</p>
+                <div class="medecin-details">
+                    <div class="detail-item">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <span>${medecin.email}</span>
+                    </div>
+                    <div class="detail-item">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        <span>${medecin.telephone || 'Non renseigné'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>${medecin.adresse || 'Non renseignée'}</span>
+                    </div>
+                </div>
+                <div class="medecin-actions">
+                    <a href="/medecins/${medecin.id}" class="btn-details">Voir profil</a>
+                    <a href="/rdv/nouveau?medecin=${medecin.id}" class="btn-rdv">Prendre RDV</a>
+                </div>
+            </div>
+        `;
+        elements.medecinsGrid.appendChild(medecinCard);
+    });
+}
+
+// Fonction pour mettre à jour le filtre des spécialités
+function updateSpecialiteFilter(medecins) {
+    const specialites = [...new Set(medecins.map(m => m.specialite))];
+    const filter = elements.specialiteFilter;
+    
+    // Sauvegarder la valeur sélectionnée
+    const selectedValue = filter.value;
+    
+    // Garder seulement la première option (Toutes spécialités)
+    filter.innerHTML = '<option value="">Toutes spécialités</option>';
+    
+    // Ajouter les nouvelles options
+    specialites.forEach(specialite => {
+        const option = document.createElement('option');
+        option.value = specialite;
+        option.textContent = specialite;
+        filter.appendChild(option);
+    });
+    
+    // Restaurer la sélection si elle existe toujours
+    if (selectedValue && specialites.includes(selectedValue)) {
+        filter.value = selectedValue;
+    }
+}
+
+// Fonction pour filtrer les médecins
+function filterMedecins() {
+    // Implémentation du filtrage serait ajoutée ici
+    console.log('Filtrage des médecins...');
+}
+
+// Écouteurs d'événements
+elements.retryBtn.addEventListener('click', loadMedecins);
+elements.searchBtn.addEventListener('click', filterMedecins);
+elements.searchInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') filterMedecins();
+});
+elements.specialiteFilter.addEventListener('change', filterMedecins);
+elements.disponibiliteFilter.addEventListener('change', filterMedecins);
+
+// Charger les données au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    loadStatistics();
+    loadMedecins();
+
+    // Rafraîchir périodiquement
+    setInterval(loadStatistics, config.refreshInterval.stats);
+    setInterval(loadMedecins, config.refreshInterval.medecins);
+});
+</script>
+
+<style>
+/* Styles globaux */
+.medecins-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* En-tête */
+.medecins-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.medecins-header h1 {
+    font-size: 2.5rem;
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: #718096;
+    margin: 0;
+}
+
+.header-icon {
+    display: inline-block;
+    animation: bounce 2s infinite;
+}
+
+/* Grille de statistiques */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: #f0f7ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.stat-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: #4f46e5;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.stat-content p {
+    margin: 5px 0 0;
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+/* Barre de recherche */
+.search-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 300px;
+    position: relative;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 20px;
+    padding-right: 50px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: #a5b4fc;
+    box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.3);
+    outline: none;
+}
+
+.search-box button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.search-box button svg {
+    width: 20px;
+    height: 20px;
+    stroke: #64748b;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+}
+
+.filters select {
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+/* Grille des médecins */
+.medecins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.medecin-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    display: flex;
+    padding: 20px;
+}
+
+.medecin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.medecin-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-right: 20px;
+    flex-shrink: 0;
+}
+
+.medecin-info {
+    flex: 1;
+}
+
+.medecin-info h3 {
+    margin: 0 0 5px;
+    color: #2d3748;
+    font-size: 1.2rem;
+}
+
+.specialite {
+    margin: 0 0 15px;
+    color: #4f46e5;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.medecin-details {
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #4a5568;
+}
+
+.detail-item svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+    stroke: #64748b;
+}
+
+.medecin-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-details, .btn-rdv {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-details {
+    border: 1px solid #e2e8f0;
+    color: #4f46e5;
+    background: white;
+}
+
+.btn-details:hover {
+    background: #f5f3ff;
+    border-color: #c7d2fe;
+}
+
+.btn-rdv {
+    background: #4f46e5;
+    color: white;
+    border: 1px solid #4f46e5;
+}
+
+.btn-rdv:hover {
+    background: #4338ca;
+    border-color: #4338ca;
+}
+
+/* États */
+.loading-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.error-state, .empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.error-icon, .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.error-state h4, .empty-state h4 {
+    margin: 0 0 10px;
+    color: #2d3748;
+}
+
+.error-state p, .empty-state p {
+    margin: 0 0 20px;
+    color: #718096;
+}
+
+#retry-btn {
+    padding: 10px 20px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#retry-btn:hover {
+    background: #4338ca;
+}
+
+/* Animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .medecins-header h1 {
+        font-size: 2rem;
+    }
+    
+    .medecins-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-container {
+        flex-direction: column;
+    }
+    
+    .filters {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

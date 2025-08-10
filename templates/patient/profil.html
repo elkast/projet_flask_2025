@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Profil - {{ patient.prenom }} {{ patient.nom }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+        <h1 class="card-title">Mon Profil</h1>
+        <p class="card-subtitle">Modifiez vos informations personnelles</p>
+    </div>
+
+    <form method="POST">
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="nom" class="form-label">Nom *</label>
+                <input type="text" id="nom" name="nom" class="form-control" value="{{ patient.nom }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="prenom" class="form-label">Prénom *</label>
+                <input type="text" id="prenom" name="prenom" class="form-control" value="{{ patient.prenom }}" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">Email *</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ patient.email }}" required>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="date_naissance" class="form-label">Date de naissance *</label>
+                <input type="date" id="date_naissance" name="date_naissance" class="form-control" value="{{ patient.date_naissance }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="telephone" class="form-label">Téléphone *</label>
+                <input type="tel" id="telephone" name="telephone" class="form-control" value="{{ patient.telephone }}" required>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation en temps réel
+    const inputs = document.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                this.style.borderColor = 'var(--danger-color)';
+            } else {
+                this.style.borderColor = 'var(--success-color)';
+            }
+        });
+    });
+
+    // Validation de l'email
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(this.value)) {
+            this.style.borderColor = 'var(--danger-color)';
+        } else {
+            this.style.borderColor = 'var(--success-color)';
+        }
+    });
+
+    // Animation de confirmation lors de la soumission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = 'Mise à jour...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}
+

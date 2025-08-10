@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - {{ patient.prenom }} {{ patient.nom }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- En-tête avec bienvenue -->
+    <div class="welcome-card">
+        <div class="welcome-content">
+            <h1>Bonjour {{ patient.prenom }} {{ patient.nom }} <span class="welcome-emoji">👋</span></h1>
+            <p class="welcome-subtitle">Bienvenue sur votre espace personnel</p>
+        </div>
+        <div class="welcome-illustration">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card primary-gradient">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <h3>{{ rendez_vous|length }}</h3>
+                <p>Rendez-vous total</p>
+            </div>
+        </div>
+        
+        <div class="stat-card success-gradient">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3>{{ rendez_vous|selectattr("statut", "equalto", "Programmé")|list|length }}</h3>
+                <p>RDV programmés</p>
+            </div>
+        </div>
+        
+        <div class="stat-card info-gradient">
+            <div class="stat-icon">👨‍⚕️</div>
+            <div class="stat-content">
+                <h3>3</h3>
+                <p>Médecins disponibles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="main-content-grid">
+        <!-- Actions rapides -->
+        <div class="action-card">
+            <div class="card-header">
+                <h2>Actions rapides</h2>
+                <p>Gérez vos rendez-vous facilement</p>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('nouveau_rdv') }}" class="action-btn primary-action">
+                    <span class="btn-icon">📅</span>
+                    <span>Prendre un nouveau rendez-vous</span>
+                </a>
+                <a href="{{ url_for('liste_rdv') }}" class="action-btn secondary-action">
+                    <span class="btn-icon">📋</span>
+                    <span>Voir tous mes rendez-vous</span>
+                </a>
+                <a href="{{ url_for('patient_profil') }}" class="action-btn outline-action">
+                    <span class="btn-icon">👤</span>
+                    <span>Modifier mon profil</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Prochains rendez-vous -->
+        <div class="appointments-card">
+            <div class="card-header">
+                <h2>Prochains rendez-vous</h2>
+                <p>Vos consultations à venir</p>
+            </div>
+            
+            {% if rendez_vous %}
+                {% set rdv_futurs = rendez_vous|selectattr("statut", "equalto", "Programmé")|list %}
+                {% if rdv_futurs %}
+                    <div class="appointments-list">
+                        {% for rdv in rdv_futurs[:3] %}
+                            <div class="appointment-item">
+                                <div class="appointment-header">
+                                    <div class="doctor-info">
+                                        <div class="doctor-avatar">
+                                            {{ rdv.medecin_prenom[0] }}{{ rdv.medecin_nom[0] }}
+                                        </div>
+                                        <div>
+                                            <h4>Dr {{ rdv.medecin_prenom }} {{ rdv.medecin_nom }}</h4>
+                                            <p class="specialty">{{ rdv.specialite }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge">{{ rdv.statut }}</span>
+                                </div>
+                                
+                                <div class="appointment-details">
+                                    <div class="detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        <span>{{ rdv.date_heure.strftime('%d/%m/%Y à %H:%M') }}</span>
+                                    </div>
+                                    {% if rdv.motif %}
+                                    <div class="detail-item">
+                                        <span class="detail-icon">💬</span>
+                                        <span>{{ rdv.motif }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="appointment-actions">
+                                    <a href="{{ url_for('details_rdv', rdv_id=rdv.id) }}" class="btn-details">
+                                        Voir détails
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if rdv_futurs|length > 3 %}
+                        <div class="see-all-container">
+                            <a href="{{ url_for('liste_rdv') }}" class="see-all-btn">Voir tous les rendez-vous</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <h4>Aucun rendez-vous programmé</h4>
+                        <p>Prenez rendez-vous avec un de nos spécialistes</p>
+                        <a href="{{ url_for('nouveau_rdv') }}" class="empty-action-btn">
+                            Prendre un rendez-vous
+                        </a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <h4>Aucun rendez-vous pour le moment</h4>
+                    <p>Commencez par prendre votre premier rendez-vous</p>
+                    <a href="{{ url_for('nouveau_rdv') }}" class="empty-action-btn">
+                        Prendre votre premier rendez-vous
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles globaux */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Carte de bienvenue */
+.welcome-card {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-content h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.welcome-subtitle {
+    margin: 5px 0 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.welcome-emoji {
+    animation: wave 2s infinite;
+    display: inline-block;
+    transform-origin: 70% 70%;
+}
+
+.welcome-illustration svg {
+    width: 80px;
+    height: 80px;
+    stroke: rgba(255, 255, 255, 0.3);
+}
+
+/* Grille de statistiques */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    font-size: 40px;
+    margin-right: 20px;
+    opacity: 0.8;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.stat-content p {
+    margin: 5px 0 0;
+    opacity: 0.9;
+    font-size: 15px;
+}
+
+.primary-gradient {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.success-gradient {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.info-gradient {
+    background: linear-gradient(135deg, #43e97b, #38f9d7);
+}
+
+/* Grille de contenu principal */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+@media (max-width: 768px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Carte d'actions */
+.action-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-header h2 {
+    margin: 0 0 5px;
+    font-size: 22px;
+    color: #2d3748;
+}
+
+.card-header p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.primary-action {
+    background: #4f46e5;
+    color: white;
+}
+
+.primary-action:hover {
+    background: #4338ca;
+    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+}
+
+.secondary-action {
+    background: #f3f4f6;
+    color: #4f46e5;
+}
+
+.secondary-action:hover {
+    background: #e5e7eb;
+    box-shadow: 0 5px 15px rgba(209, 213, 219, 0.3);
+}
+
+.outline-action {
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+.outline-action:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
+.btn-icon {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+/* Carte des rendez-vous */
+.appointments-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.appointments-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 15px;
+    padding-right: 5px;
+}
+
+.appointment-item {
+    border: 1px solid #edf2f7;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+}
+
+.appointment-item:hover {
+    border-color: #cbd5e0;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.doctor-info {
+    display: flex;
+    align-items: center;
+}
+
+.doctor-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4f46e5;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 12px;
+}
+
+.doctor-info h4 {
+    margin: 0;
+    font-size: 16px;
+    color: #2d3748;
+}
+
+.specialty {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: #718096;
+}
+
+.status-badge {
+    background: #10b981;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.appointment-details {
+    margin: 10px 0;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.detail-icon {
+    margin-right: 10px;
+    opacity: 0.7;
+}
+
+.appointment-actions {
+    margin-top: 15px;
+}
+
+.btn-details {
+    display: inline-block;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-details:hover {
+    background: #f5f3ff;
+    border-color: #c7d2fe;
+}
+
+.see-all-container {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.see-all-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #4f46e5;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.see-all-btn:hover {
+    background: #4338ca;
+}
+
+/* État vide */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+}
+
+.empty-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+    opacity: 0.6;
+}
+
+.empty-state h4 {
+    margin: 10px 0;
+    color: #4a5568;
+    font-size: 18px;
+}
+
+.empty-state p {
+    margin: 0 0 20px;
+    font-size: 14px;
+}
+
+.empty-action-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #4f46e5;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.empty-action-btn:hover {
+    background: #4338ca;
+    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+}
+
+/* Animations */
+@keyframes wave {
+    0% { transform: rotate(0deg); }
+    10% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    30% { transform: rotate(14deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+    60% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes statistiques
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.transform = 'translateY(-10px)';
+            card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.1)';
+            setTimeout(() => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+            }, 300);
+        }, index * 150);
+    });
+    
+    // Animation des éléments de rendez-vous
+    const appointmentItems = document.querySelectorAll('.appointment-item');
+    appointmentItems.forEach((item, index) => {
+        setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

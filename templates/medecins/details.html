@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Détails du Dr. {{ medecin.prenom }} {{ medecin.nom }} - Cabinet Médical{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+            {% elif medecin %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Dr. {{ medecin.prenom }} {{ medecin.nom }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ medecin.specialite }}</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Email:</strong> {{ medecin.email }}</p>
+                                <p><strong>Téléphone:</strong> {{ medecin.telephone or 'Non renseigné' }}</p>
+                                <p><strong>Adresse:</strong> {{ medecin.adresse or 'Non renseignée' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Membre depuis:</strong> {{ medecin.created_at.strftime('%d/%m/%Y') }}</p>
+                                <p><strong>Dernière mise à jour:</strong> {{ medecin.updated_at.strftime('%d/%m/%Y') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="/rdv/nouveau?medecin={{ medecin.id }}" class="btn btn-success btn-lg">Prendre un rendez-vous</a>
+                            <a href="/medecins/" class="btn btn-secondary btn-lg">Retour à la liste</a>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if prochains_rdv %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>Prochains rendez-vous disponibles</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th>Patient</th>
+                                        <th>Motif</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rdv in prochains_rdv %}
+                                    <tr>
+                                        <td>{{ rdv.date_rdv.strftime('%d/%m/%Y') }}</td>
+                                        <td>{{ rdv.heure_rdv }}</td>
+                                        <td>{{ rdv.patient.nom }} {{ rdv.patient.prenom }}</td>
+                                        <td>{{ rdv.motif }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-warning">
+                    Médecin non trouvé.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
